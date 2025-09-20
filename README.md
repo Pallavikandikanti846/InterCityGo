@@ -40,4 +40,3 @@ The application integrates with several third-party services to provide core fun
 
 * **Twilio Or Firebase for SMS:** Powers SMS notifications to keep users informed about their trip details and status.
 
-ensed under the MIT License.
