@@ -338,42 +338,33 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  background-color: #FFFFFF;
+  background-color: #F9FAFB;
   border-radius: 12px;
   padding: 0 14px;
-  border: 1.5px solid #E5E7EB;
-  transition: border-color 0.2s;
+  border: none;
+  transition: all 0.2s ease;
+  min-height: 50px; /* Ensure consistent height */
+  width: 100%;
+  cursor: pointer;
+  overflow: visible;
 }
 
 .input-group:focus-within,
 .input-group.focused {
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
-.input-clear-btn {
-  background: none;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  color: #9CA3AF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
-}
-
-.input-clear-btn:hover {
-  color: #6B7280;
-}
-
-.input-clear-btn:active {
-  color: #374151;
-}
 
 .input-icon {
   font-size: 20px;
   margin-right: 12px;
+  color: #9CA3AF;
+  transition: color 0.2s ease;
+}
+
+.input-group:focus-within .input-icon,
+.input-group.focused .input-icon {
   color: #6B7280;
 }
 
@@ -386,6 +377,92 @@ body {
   border: 1px solid #E5E7EB !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
+
+/* Google Maps PlaceAutocompleteElement Styling */
+gmp-place-autocomplete {
+  width: 100% !important;
+  display: block !important;
+}
+
+gmp-place-autocomplete input {
+  width: 100% !important;
+  padding: 14px 0 !important;
+  border: none !important;
+  background: transparent !important;
+  font-size: 15px !important;
+  outline: none !important;
+  color: #111827 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  flex: 1 !important;
+}
+
+gmp-place-autocomplete input::placeholder {
+  color: #9CA3AF !important;
+  opacity: 1 !important;
+}
+
+/* Ensure input group styling works with Google Maps elements */
+.input-group gmp-place-autocomplete {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 22px; /* Match input height */
+}
+
+.input-group gmp-place-autocomplete input {
+  flex: 1;
+  padding: 14px 0 !important;
+  border: none !important;
+  background: transparent !important;
+  font-size: 15px !important;
+  outline: none !important;
+  color: #111827 !important;
+  width: 100% !important;
+  height: auto !important;
+  line-height: 1.5 !important;
+}
+
+/* Ensure the input group maintains its styling when Google Maps replaces the input */
+.input-group:has(gmp-place-autocomplete) {
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Fallback for browsers that don't support :has() */
+.input-group gmp-place-autocomplete {
+  display: flex !important;
+  align-items: center !important;
+  flex: 1 !important;
+}
+
+/* Custom class for Google Maps autocomplete elements */
+.google-maps-autocomplete {
+  width: 100% !important;
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 22px !important;
+}
+
+.google-maps-autocomplete input {
+  width: 100% !important;
+  padding: 14px 0 !important;
+  border: none !important;
+  background: transparent !important;
+  font-size: 15px !important;
+  outline: none !important;
+  color: #111827 !important;
+  height: auto !important;
+  line-height: 1.5 !important;
+  flex: 1 !important;
+}
+
+.google-maps-autocomplete input::placeholder {
+  color: #9CA3AF !important;
+  opacity: 1 !important;
+}
+
 
 .pac-container:after {
   display: none !important;
@@ -442,10 +519,83 @@ body {
   font-size: 15px;
   outline: none;
   color: #111827;
+  width: 100%;
+  min-height: 22px;
+  display: block;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .input-group .input::placeholder {
   color: #9CA3AF;
+  opacity: 1;
+}
+
+/* Date and Time container */
+.date-time-container {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.date-time-container .input-group {
+  flex: 1;
+}
+
+/* Date input specific styling */
+.input-group input[type="date"] {
+  color-scheme: light;
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* Time input specific styling */
+.input-group input[type="time"] {
+  color-scheme: light;
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.input-group input[type="date"]::-webkit-calendar-picker-indicator {
+  background: transparent;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 4px;
+}
+
+.input-group input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  color: #6B7280;
+}
+
+.input-group input[type="time"]::-webkit-calendar-picker-indicator {
+  background: transparent;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 4px;
+}
+
+.input-group input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  color: #6B7280;
+}
+
+/* Placeholder styling for date input */
+.input-group input[type="date"]::placeholder {
+  color: #9CA3AF;
+  opacity: 1;
+  font-size: 15px;
+}
+
+/* Placeholder styling for time input */
+.input-group input[type="time"]::placeholder {
+  color: #9CA3AF;
+  opacity: 1;
+  font-size: 15px;
 }
 
 /* Ride Options */
@@ -598,6 +748,24 @@ body {
 
 .trip-card.upcoming .trip-icon {
   color: #3B82F6;
+}
+
+.trip-image-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F3F4F6;
+}
+
+.trip-city-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .trip-details {

@@ -3,23 +3,10 @@ import { IoSearchOutline, IoSettingsOutline } from "react-icons/io5";
 import BottomNav from "../components/BottomNav";
 import GoogleMap from "../components/GoogleMap";
 
-// Try to import images, fallback to gradients if not found
-let montrealImg, ottawaImg, quebecImg;
-try {
-  montrealImg = new URL("../assets/montreal.jpg", import.meta.url).href;
-} catch {
-  montrealImg = null;
-}
-try {
-  ottawaImg = new URL("../assets/ottawa.jpg", import.meta.url).href;
-} catch {
-  ottawaImg = null;
-}
-try {
-  quebecImg = new URL("../assets/quebec.jpg", import.meta.url).href;
-} catch {
-  quebecImg = null;
-}
+// Import city images from assets folder
+import montrealImg from "../Images/montreal.jpg";
+import ottawaImg from "../Images/ottawa.jpg";
+import quebecImg from "../Images/quebec.jpg";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -72,13 +59,12 @@ export default function Home() {
 
         {/* Recently Booked */}
         <div className="recently-booked home-recently-booked">
-          <h2 className="section-title">Recently Booked</h2>
+          <h2 className="section-title">Book to Provinces</h2>
           <div className="destination-grid">
             {recentDestinations.map((dest) => (
               <div 
                 key={dest.name} 
                 className="destination-card"
-                onClick={() => navigate("/search")}
               >
                 <div 
                   className="destination-image" 

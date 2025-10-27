@@ -1,18 +1,22 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoSearchOutline, IoSettingsOutline, IoCalendarOutline, IoLocationOutline, IoArrowBack } from "react-icons/io5";
 import BottomNav from "../components/BottomNav";
 import LocationSearchInput from "../components/LocationSearchInput";
-import { cityImages, cityColors } from "../assets/cities";
 
 export default function Search() {
   const navigate = useNavigate();
+  const dateInputRef = useRef(null);
+  const timeInputRef = useRef(null);
   const [formData, setFormData] = useState({
     pickupLocation: "",
     dropoffLocation: "",
-    date: "",
+    date: "", // Empty by default
+    time: "",
     rideType: "",
+    womenOnly: false, // New field for women-only option
   });
+
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -23,7 +27,15 @@ export default function Search() {
   };
 
   const handleRideTypeChange = (type) => {
-    setFormData((prev) => ({ ...prev, rideType: type }));
+    setFormData((prev) => ({ 
+      ...prev, 
+      rideType: type,
+      womenOnly: false // Reset women-only when changing ride type
+    }));
+  };
+
+  const handleWomenOnlyToggle = () => {
+    setFormData((prev) => ({ ...prev, womenOnly: !prev.womenOnly }));
   };
 
   const handleSearch = () => {
@@ -32,32 +44,20 @@ export default function Search() {
       alert("Please select a ride option");
       return;
     }
-    if (!formData.pickupLocation || !formData.dropoffLocation || !formData.date) {
+    if (!formData.pickupLocation || !formData.dropoffLocation || !formData.date || !formData.time) {
       alert("Please fill in all fields");
       return;
     }
-    // Store search data and navigate to review
+    // Store search data and navigate based on ride type
     localStorage.setItem("searchData", JSON.stringify(formData));
-    navigate("/review");
+    
+    if (formData.rideType === "pooling") {
+      navigate("/ride-pool");
+    } else {
+      navigate("/review");
+    }
   };
 
-  const recentDestinations = [
-    { 
-      name: "Montreal", 
-      gradient: cityImages.montreal,
-      color: cityColors.montreal 
-    },
-    { 
-      name: "Ottawa", 
-      gradient: cityImages.ottawa,
-      color: cityColors.ottawa 
-    },
-    { 
-      name: "Quebec", 
-      gradient: cityImages.quebec,
-      color: cityColors.quebec 
-    },
-  ];
 
   return (
     <div className="page">
@@ -89,16 +89,105 @@ export default function Search() {
             icon={IoLocationOutline}
           />
 
-          <div className="input-group">
-            <IoCalendarOutline className="input-icon" />
-            <input
-              className="input"
-              type="date"
-              name="date"
-              placeholder="Date And Time"
-              value={formData.date}
-              onChange={handleChange}
-            />
+          <div className="date-time-container">
+            <div className="input-group" onClick={() => {
+              if (dateInputRef.current) {
+                dateInputRef.current.focus();
+                dateInputRef.current.click();
+                if (dateInputRef.current.showPicker) {
+                  dateInputRef.current.showPicker();
+                }
+              }
+            }}>
+              <IoCalendarOutline className="input-icon" />
+              <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                <input
+                  ref={dateInputRef}
+                  className="input"
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (e.target.showPicker) {
+                      e.target.showPicker();
+                    }
+                  }}
+                  onFocus={(e) => {
+                    if (e.target.showPicker) {
+                      e.target.showPicker();
+                    }
+                  }}
+                  style={{
+                    cursor: 'pointer',
+                    zIndex: 10,
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    opacity: 0, // Make the actual input invisible
+                    backgroundColor: 'transparent'
+                  }}
+                />
+                <div 
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingLeft: '40px',
+                    color: formData.date ? 'inherit' : '#6B7280',
+                    fontSize: '16px',
+                    pointerEvents: 'none',
+                    zIndex: 1
+                  }}
+                >
+                  {formData.date ? new Date(formData.date + 'T00:00:00').toLocaleDateString('en-GB') : 'dd-mm-yyyy'}
+                </div>
+              </div>
+            </div>
+
+            <div className="input-group" onClick={() => {
+              if (timeInputRef.current) {
+                timeInputRef.current.focus();
+                timeInputRef.current.click();
+                if (timeInputRef.current.showPicker) {
+                  timeInputRef.current.showPicker();
+                }
+              }
+            }}>
+              <IoCalendarOutline className="input-icon" />
+              <input
+                ref={timeInputRef}
+                className="input"
+                type="time"
+                name="time"
+                placeholder="hh:mm"
+                value={formData.time}
+                onChange={handleChange}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (e.target.showPicker) {
+                    e.target.showPicker();
+                  }
+                }}
+                onFocus={(e) => {
+                  if (e.target.showPicker) {
+                    e.target.showPicker();
+                  }
+                }}
+                style={{
+                  cursor: 'pointer',
+                  zIndex: 10,
+                  position: 'relative',
+                  width: '100%',
+                  height: '100%'
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -111,7 +200,7 @@ export default function Search() {
           >
             <div className="option-content">
               <h3 className="option-title">Private Ride</h3>
-              <p className="option-desc">Your Own car, direct route</p>
+              <p className="option-desc">Your own car, direct route - Standard pricing</p>
             </div>
             <div className={`option-radio ${formData.rideType === "private" ? "checked" : ""}`}>
               {formData.rideType === "private" && <div className="radio-inner"></div>}
@@ -124,50 +213,38 @@ export default function Search() {
           >
             <div className="option-content">
               <h3 className="option-title">Ride Pooling</h3>
-              <p className="option-desc">Share the ride, save money</p>
+              <p className="option-desc">Share the ride, save up to 65%</p>
             </div>
             <div className={`option-radio ${formData.rideType === "pooling" ? "checked" : ""}`}>
               {formData.rideType === "pooling" && <div className="radio-inner"></div>}
             </div>
           </div>
 
-          <div
-            className={`option-card ${formData.rideType === "women-only" ? "selected" : ""}`}
-            onClick={() => handleRideTypeChange("women-only")}
-          >
-            <div className="option-content">
-              <h3 className="option-title">Women-Only Ride</h3>
-              <p className="option-desc">Travel with women riders</p>
+          {/* Women-only option - only show when pooling is selected */}
+          {formData.rideType === "pooling" && (
+            <div className="women-only-option" style={{ marginTop: '15px', padding: '15px', border: '1px solid #e5e7eb', borderRadius: '8px', backgroundColor: '#f9fafb' }}>
+              <div 
+                className={`option-card ${formData.womenOnly ? "selected" : ""}`}
+                onClick={handleWomenOnlyToggle}
+                style={{ margin: 0, backgroundColor: 'transparent', border: 'none' }}
+              >
+                <div className="option-content">
+                  <h3 className="option-title" style={{ fontSize: '16px', margin: 0 }}>Women-Only Pooling</h3>
+                  <p className="option-desc" style={{ fontSize: '14px', margin: '5px 0 0 0' }}>
+                    Travel with women passengers only (optional)
+                  </p>
+                </div>
+                <div className={`option-radio ${formData.womenOnly ? "checked" : ""}`}>
+                  {formData.womenOnly && <div className="radio-inner"></div>}
+                </div>
+              </div>
             </div>
-            <div className={`option-radio ${formData.rideType === "women-only" ? "checked" : ""}`}>
-              {formData.rideType === "women-only" && <div className="radio-inner"></div>}
-            </div>
-          </div>
+          )}
         </div>
 
         <button className="btn btn-primary" onClick={handleSearch}>
           Book Ride
         </button>
-
-        <div className="recently-booked">
-          <h2 className="section-title">Recently Booked</h2>
-          <div className="destination-grid">
-            {recentDestinations.map((dest) => (
-              <div key={dest.name} className="destination-card">
-                <div 
-                  className="destination-image" 
-                  style={{ 
-                    background: dest.gradient,
-                    backgroundColor: dest.color
-                  }}
-                >
-                  <span className="city-initial">{dest.name.charAt(0)}</span>
-                </div>
-                <p className="destination-name">{dest.name}</p>
-              </div>
-            ))}
-          </div>
-        </div>
       </main>
 
       <BottomNav />
