@@ -50,8 +50,13 @@ router.post("/", authenticateToken, async (req, res) => {
     const taxesAndFees = 10.0;
     const totalFare = baseFare + taxesAndFees;
 
+    // Check if user is a driver from Driver collection
+    const Driver = (await import("../models/driver.js")).default;
+    const driver = await Driver.findById(req.user.id);
+    
     const trip = await Trip.create({
       driver: req.user.id,
+      driverModel: driver ? "Driver" : "User",
       pickupLocation,
       dropoffLocation,
       date,

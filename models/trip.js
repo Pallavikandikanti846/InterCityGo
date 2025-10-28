@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 
 const tripSchema = new mongoose.Schema(
   {
-    driver: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    driver: { type: mongoose.Schema.Types.ObjectId, refPath: "driverModel" },
+    driverModel: { type: String, enum: ["User", "Driver"], default: "Driver" },
     pickupLocation: {
       address: { type: String, required: true },
       city: { type: String, required: true },

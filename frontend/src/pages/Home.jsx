@@ -39,8 +39,8 @@ export default function Home() {
   return (
     <div className="page">
       <header className="header">
-        <h1 className="logo">InterCityGo</h1>
-        <button className="settings-btn">
+        <h1 className="logo" onClick={() => navigate("/home")} style={{ cursor: "pointer" }}>InterCityGo</h1>
+        <button className="settings-btn" onClick={() => navigate("/settings")}>
           <IoSettingsOutline size={24} />
         </button>
       </header>

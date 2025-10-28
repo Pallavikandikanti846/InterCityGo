@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoCardOutline, IoCloseOutline, IoAddOutline, IoWalletOutline, IoArrowBack, IoCheckmarkCircle } from "react-icons/io5";
+import { IoCardOutline, IoCloseOutline, IoAddOutline, IoWalletOutline, IoCheckmarkCircle } from "react-icons/io5";
 import BottomNav from "../components/BottomNav";
 
 export default function Payments() {
@@ -27,7 +27,14 @@ export default function Payments() {
       setPaymentMethods(JSON.parse(storedMethods));
     }
     if (storedTransactions) {
-      setTransactions(JSON.parse(storedTransactions));
+      // Filter to only show successful transactions
+      const allTransactions = JSON.parse(storedTransactions);
+      const successfulTransactions = allTransactions.filter(t => t.status === "successful");
+      setTransactions(successfulTransactions);
+      // Update localStorage to only keep successful transactions
+      if (successfulTransactions.length !== allTransactions.length) {
+        localStorage.setItem("transactions", JSON.stringify(successfulTransactions));
+      }
     }
   }, []);
 
@@ -120,7 +127,7 @@ export default function Payments() {
       : estimatedDistance * PRIVATE_RIDE_PER_KM;
     const total = baseFare + BASE_TAXES_FEES;
     
-    // Create transaction
+    // Create transaction (only for successful bookings)
     const transaction = {
       id: Date.now(),
       route: `${searchData.pickupLocation || "Pickup"} to ${searchData.dropoffLocation || "Dropoff"}`,
@@ -130,7 +137,8 @@ export default function Payments() {
         year: "numeric" 
       }),
       amount: total,
-      type: searchData.rideType || "private"
+      type: searchData.rideType || "private",
+      status: "successful"
     };
     
     const updatedTransactions = [...transactions, transaction];
@@ -181,11 +189,7 @@ export default function Payments() {
   return (
     <div className="page">
       <header className="header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          <IoArrowBack size={24} />
-        </button>
         <h1 className="page-title">Payments</h1>
-        <div style={{ width: "24px" }}></div>
       </header>
 
       <main className="content">
@@ -248,10 +252,10 @@ export default function Payments() {
               )}
             </section>
 
-            {transactions.length > 0 && (
+            {transactions.filter(t => t.status === "successful").length > 0 && (
               <section className="payment-section">
                 <h2 className="section-title">Transaction History</h2>
-                {transactions.map((transaction) => (
+                {transactions.filter(t => t.status === "successful").map((transaction) => (
                   <div key={transaction.id} className="transaction-card" style={{
                     display: 'flex',
                     justifyContent: 'space-between',

@@ -3,9 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { 
   IoPersonCircleOutline, 
   IoCreateOutline, 
-  IoNotificationsOutline, 
-  IoLockClosedOutline, 
-  IoHelpCircleOutline,
+  IoSettingsOutline,
   IoChevronForward 
 } from "react-icons/io5";
 import BottomNav from "../components/BottomNav";
@@ -32,6 +30,7 @@ export default function Profile() {
           <IoPersonCircleOutline className="profile-avatar" />
           <h2 className="profile-name">{user?.name || "User"}</h2>
           <p className="profile-email">{user?.email}</p>
+          {user?.phone && <p className="profile-phone" style={{ marginTop: "4px", color: "#6B7280" }}>{user.phone}</p>}
           <p className="profile-role">
             {user?.role === "passenger" ? "Passenger" : user?.role}
           </p>
@@ -40,31 +39,17 @@ export default function Profile() {
         <section className="profile-section">
           <h3 className="section-title">Account Settings</h3>
           <div className="settings-list">
-            <button className="settings-item">
+            <button className="settings-item" onClick={() => navigate("/profile/edit")}>
               <span className="settings-item-content">
                 <IoCreateOutline size={20} />
                 Edit Profile
               </span>
               <IoChevronForward size={20} />
             </button>
-            <button className="settings-item">
+            <button className="settings-item" onClick={() => navigate("/settings")}>
               <span className="settings-item-content">
-                <IoNotificationsOutline size={20} />
-                Notifications
-              </span>
-              <IoChevronForward size={20} />
-            </button>
-            <button className="settings-item">
-              <span className="settings-item-content">
-                <IoLockClosedOutline size={20} />
-                Privacy & Security
-              </span>
-              <IoChevronForward size={20} />
-            </button>
-            <button className="settings-item">
-              <span className="settings-item-content">
-                <IoHelpCircleOutline size={20} />
-                Help & Support
+                <IoSettingsOutline size={20} />
+                Settings
               </span>
               <IoChevronForward size={20} />
             </button>

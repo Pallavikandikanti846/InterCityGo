@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoCarSportOutline, IoArrowBack, IoChevronForward } from "react-icons/io5";
+import { IoCarSportOutline, IoChevronForward } from "react-icons/io5";
 import BottomNav from "../components/BottomNav";
 import { api } from "../utils/api";
 
@@ -65,11 +65,7 @@ export default function MyTrips() {
   return (
     <div className="page">
       <header className="header">
-        <button className="back-btn" onClick={() => navigate("/home")}>
-          <IoArrowBack size={24} />
-        </button>
         <h1 className="page-title">My Trips</h1>
-        <div style={{ width: "24px" }}></div>
       </header>
 
       <main className="content">

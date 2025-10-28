@@ -7,6 +7,7 @@ import connectDB from "./modules/InterCityGo/db.js";
 import authRoutes from "./routes/auth.js";
 import tripRoutes from "./routes/trips.js";
 import bookingRoutes from "./routes/bookings.js";
+import driverRoutes from "./routes/driver.js";
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.get("/api/ping", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/trips", tripRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/driver", driverRoutes);
 
 app.get("/", (req, res) => res.status(200).send("InterCityGo Backend Running 🚀"));
 
