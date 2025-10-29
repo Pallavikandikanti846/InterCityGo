@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import GoogleMapsLoader from "./components/GoogleMapsLoader";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -22,6 +23,13 @@ import DriverEarnings from "./pages/DriverEarnings";
 import DriverProfile from "./pages/DriverProfile";
 import DriverSettings from "./pages/DriverSettings";
 import DriverEditProfile from "./pages/DriverEditProfile";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminDrivers from "./pages/AdminDrivers";
+import AdminUsers from "./pages/AdminUsers";
+import AdminDisputes from "./pages/AdminDisputes";
+import AdminDisputeDetail from "./pages/AdminDisputeDetail";
+import AdminSettings from "./pages/AdminSettings";
 
 export default function App() {
   return (
@@ -173,6 +181,57 @@ export default function App() {
                 <ProtectedRoute>
                   <DriverEditProfile />
                 </ProtectedRoute>
+              }
+            />
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<Navigate to="/admin/dashboard" />} />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <AdminProtectedRoute>
+                  <AdminDashboard />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/drivers"
+              element={
+                <AdminProtectedRoute>
+                  <AdminDrivers />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminProtectedRoute>
+                  <AdminUsers />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/disputes"
+              element={
+                <AdminProtectedRoute>
+                  <AdminDisputes />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/disputes/:id"
+              element={
+                <AdminProtectedRoute>
+                  <AdminDisputeDetail />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <AdminProtectedRoute>
+                  <AdminSettings />
+                </AdminProtectedRoute>
               }
             />
             <Route path="/" element={<Navigate to="/login" />} />

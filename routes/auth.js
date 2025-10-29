@@ -285,4 +285,35 @@ router.put("/profile", verifyToken, async (req, res) => {
   }
 });
 
+// DELETE /api/auth/account - Delete user account
+router.delete("/account", verifyToken, async (req, res) => {
+  try {
+    // Check in both User and Driver collections
+    let user = await User.findById(req.userId);
+    let isDriver = false;
+    
+    if (!user) {
+      user = await Driver.findById(req.userId);
+      isDriver = true;
+    }
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Delete the user/driver from database
+    if (isDriver) {
+      await Driver.findByIdAndDelete(req.userId);
+    } else {
+      await User.findByIdAndDelete(req.userId);
+    }
+
+    res.json({
+      message: "Account deleted successfully",
+      success: true
+    });
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    res.status(500).json({ message: "Failed to delete account", error: error.message });
+  }
+});
+
 export default router;

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 import {
   IoArrowBack,
   IoCardOutline,
@@ -11,13 +12,18 @@ import {
   IoHelpCircleOutline,
   IoCloseOutline,
   IoChevronForward,
+  IoTrashOutline,
 } from "react-icons/io5";
 import BottomNav from "../components/BottomNav";
+import { api } from "../utils/api";
 
 export default function Settings() {
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const { logout } = useAuth();
   const [paymentMethods, setPaymentMethods] = useState([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     // Load payment methods from localStorage
@@ -31,6 +37,33 @@ export default function Settings() {
     const updatedMethods = paymentMethods.filter((method) => method.id !== id);
     setPaymentMethods(updatedMethods);
     localStorage.setItem("paymentMethods", JSON.stringify(updatedMethods));
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!showDeleteConfirm) {
+      setShowDeleteConfirm(true);
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const data = await api.deleteAccount();
+      if (data.success) {
+        // Logout and clear all data
+        logout();
+        localStorage.clear();
+        navigate("/login");
+      } else {
+        alert(data.message || "Failed to delete account");
+        setIsDeleting(false);
+        setShowDeleteConfirm(false);
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      alert("Failed to delete account. Please try again.");
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   return (
@@ -239,6 +272,82 @@ export default function Settings() {
               </span>
               <IoChevronForward size={20} />
             </button>
+          </div>
+        </section>
+
+        {/* Delete Account */}
+        <section className="settings-section">
+          <h3 className="section-title" style={{ color: "#DC2626" }}>Danger Zone</h3>
+          <div className="settings-list">
+            {!showDeleteConfirm ? (
+              <button 
+                className="settings-item" 
+                onClick={handleDeleteAccount}
+                style={{
+                  color: "#DC2626",
+                  borderColor: "#DC2626"
+                }}
+              >
+                <span className="settings-item-content">
+                  <IoTrashOutline size={20} />
+                  Delete Account
+                </span>
+                <IoChevronForward size={20} />
+              </button>
+            ) : (
+              <div style={{
+                padding: "16px",
+                backgroundColor: "var(--card-bg)",
+                borderRadius: "12px",
+                border: "2px solid #DC2626"
+              }}>
+                <p style={{
+                  margin: "0 0 12px 0",
+                  color: "var(--text-primary)",
+                  fontSize: "14px",
+                  fontWeight: "500"
+                }}>
+                  Are you sure you want to delete your account? This action cannot be undone.
+                </p>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                    style={{
+                      flex: 1,
+                      padding: "10px",
+                      backgroundColor: "#DC2626",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      cursor: isDeleting ? "not-allowed" : "pointer",
+                      opacity: isDeleting ? 0.6 : 1
+                    }}
+                  >
+                    {isDeleting ? "Deleting..." : "Yes, Delete"}
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isDeleting}
+                    style={{
+                      flex: 1,
+                      padding: "10px",
+                      backgroundColor: "var(--bg-secondary)",
+                      color: "var(--text-primary)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      cursor: isDeleting ? "not-allowed" : "pointer"
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </main>

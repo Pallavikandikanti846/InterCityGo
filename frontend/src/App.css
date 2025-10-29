@@ -1402,6 +1402,21 @@ gmp-place-autocomplete input::placeholder {
 }
 
 /* ==========================================
+   Admin Panel Styles
+   ========================================== */
+.admin-card {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px var(--shadow);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark-mode .admin-card {
+  box-shadow: 0 1px 3px var(--shadow);
+}
+
+/* ==========================================
    Responsive (Safety for smaller screens)
    ========================================== */
 @media (max-width: 380px) {
@@ -1420,5 +1435,9 @@ gmp-place-autocomplete input::placeholder {
 
   .destination-grid {
     gap: 10px;
+  }
+
+  .admin-card {
+    padding: 12px;
   }
 }
