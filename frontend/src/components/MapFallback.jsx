@@ -1,4 +1,3 @@
-// Fallback component when Google Maps is not available
 export default function MapFallback({ height = "280px" }) {
   return (
     <div 

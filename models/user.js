@@ -1,4 +1,3 @@
-// server/src/models/User.js
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -12,7 +11,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Prevent Mongoose from overwriting model if it already exists
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 export default User;

@@ -1,4 +1,3 @@
-// models/trip.js
 import mongoose from "mongoose";
 
 const tripSchema = new mongoose.Schema(

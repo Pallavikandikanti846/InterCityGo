@@ -1,4 +1,3 @@
-// routes/bookings.js
 import express from "express";
 import Booking from "../models/booking.js";
 import Trip from "../models/trip.js";
@@ -6,7 +5,6 @@ import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// GET /api/bookings/my-trips - Get user's bookings
 router.get("/my-trips", authenticateToken, async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user.id })
@@ -16,7 +14,6 @@ router.get("/my-trips", authenticateToken, async (req, res) => {
       })
       .sort({ createdAt: -1 });
 
-    // Separate into upcoming and past
     const now = new Date();
     const upcoming = [];
     const past = [];
@@ -35,7 +32,6 @@ router.get("/my-trips", authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/bookings/:id - Get booking details
 router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
@@ -48,7 +44,6 @@ router.get("/:id", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    // Check if user owns this booking
     if (booking.user.toString() !== req.user.id) {
       return res.status(403).json({ message: "Unauthorized" });
     }
@@ -59,7 +54,6 @@ router.get("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// PUT /api/bookings/:id/cancel - Cancel a booking
 router.put("/:id/cancel", authenticateToken, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
@@ -75,7 +69,6 @@ router.put("/:id/cancel", authenticateToken, async (req, res) => {
     booking.status = "cancelled";
     await booking.save();
 
-    // Update trip availability
     const trip = await Trip.findById(booking.trip);
     if (trip) {
       trip.availableSeats += 1;

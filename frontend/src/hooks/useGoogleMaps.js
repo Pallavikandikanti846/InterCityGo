@@ -35,11 +35,62 @@ export const useGoogleMaps = () => {
       return;
     }
 
-    // Load Google Maps script
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    const getKey = () => {
+      if (typeof window !== "undefined") {
+        if (window.VITE_GOOGLE_MAPS_API_KEY && String(window.VITE_GOOGLE_MAPS_API_KEY).trim() !== "") {
+          return String(window.VITE_GOOGLE_MAPS_API_KEY).trim();
+        }
+        if (window.__GOOGLE_MAPS_API_KEY__ && String(window.__GOOGLE_MAPS_API_KEY__).trim() !== "") {
+          return String(window.__GOOGLE_MAPS_API_KEY__).trim();
+        }
+      }
+      return import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    };
+    let apiKey = getKey();
+    const loadFromServer = async () => {
+      try {
+        const res = await fetch("/api/config/maps-key");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.mapsApiKey) {
+            return data.mapsApiKey;
+          }
+        }
+      } catch (e) {}
+      return "";
+    };
+
     if (!apiKey) {
-      setError("Google Maps API key not found");
-      setIsLoading(false);
+      (async () => {
+        const serverKey = await loadFromServer();
+        if (!serverKey) {
+          setError("Google Maps API key not found");
+          setIsLoading(false);
+          return;
+        }
+        apiKey = serverKey;
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,marker&loading=async`;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+          const checkAPI = () => {
+            if (window.google && window.google.maps && window.google.maps.Map) {
+              setIsLoaded(true);
+              setIsLoading(false);
+            } else {
+              setTimeout(checkAPI, 100);
+            }
+          };
+          checkAPI();
+        };
+        script.onerror = (error) => {
+          console.error("Failed to load Google Maps:", error);
+          setError("Failed to load Google Maps");
+          setIsLoading(false);
+        };
+        document.head.appendChild(script);
+      })();
       return;
     }
 

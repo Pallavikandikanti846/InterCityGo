@@ -15,11 +15,9 @@ export default function LocationSearchInput({
   const { isLoaded, error: apiError } = useGoogleMaps();
   const observerRef = useRef(null);
 
-  // Handle keyboard events for Enter key
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      // Trigger the first suggestion selection
       const pacContainer = document.querySelector('.pac-container');
       if (pacContainer) {
         const firstSuggestion = pacContainer.querySelector('.pac-item:first-child');
@@ -33,17 +31,15 @@ export default function LocationSearchInput({
   useEffect(() => {
     if (!isLoaded) return;
 
-    // Check if Places library is available
     if (!window.google.maps.places) {
       return;
     }
 
     if (!inputRef.current) return;
 
-    // Use legacy Autocomplete for reliable behavior
     try {
       const options = {
-        componentRestrictions: { country: "ca" }, // Restrict to Canada
+        componentRestrictions: { country: "ca" },
         fields: ["address_components", "formatted_address", "geometry", "name"],
         types: ["geocode"],
       };
@@ -53,7 +49,6 @@ export default function LocationSearchInput({
         options
       );
 
-        // Style the autocomplete dropdown and improve click handling
         const stylePacContainer = () => {
           const pacContainer = document.querySelector('.pac-container');
           if (pacContainer) {
@@ -61,23 +56,19 @@ export default function LocationSearchInput({
             pacContainer.style.borderRadius = '12px';
             pacContainer.style.marginTop = '4px';
             pacContainer.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-            
-            // Add click event listener to pac items for better selection
+
             pacContainer.addEventListener('click', (e) => {
               const pacItem = e.target.closest('.pac-item');
               if (pacItem) {
-                // Trigger the selection immediately
                 pacItem.click();
               }
             });
           }
         };
 
-        // Style immediately and also after a delay to catch dynamically created containers
         stylePacContainer();
         setTimeout(stylePacContainer, 100);
 
-        // Use MutationObserver to watch for pac-container changes
         observerRef.current = new MutationObserver((mutations) => {
           mutations.forEach((mutation) => {
             if (mutation.type === 'childList') {
@@ -95,7 +86,6 @@ export default function LocationSearchInput({
           subtree: true
         });
 
-        // Listen for place selection
         autocompleteRef.current.addListener("place_changed", () => {
           const place = autocompleteRef.current.getPlace();
           
@@ -103,7 +93,6 @@ export default function LocationSearchInput({
             return;
           }
           
-          // Extract city and province
           let city = "";
           let province = "";
           
@@ -112,11 +101,10 @@ export default function LocationSearchInput({
               city = component.long_name;
             }
             if (component.types.includes("administrative_area_level_1")) {
-              province = component.short_name; // ON, QC, BC, etc.
+              province = component.short_name;
             }
           });
 
-          // Format as "City, Province" like Uber/Lyft
           const locationString = city && province 
             ? `${city}, ${province}` 
             : place.formatted_address || place.name;
@@ -124,17 +112,14 @@ export default function LocationSearchInput({
           onChange(locationString);
         });
 
-        // Add keyboard event listener for Enter key
         const inputElement = inputRef.current;
         inputElement.addEventListener('keydown', handleKeyDown);
     } catch (error) {
-      // Fallback to manual input mode if autocomplete fails
       if (inputRef.current) {
         inputRef.current.addEventListener('input', handleInputChange);
       }
     }
 
-    // Cleanup
     return () => {
       if (autocompleteRef.current && window.google && window.google.maps) {
         try {
@@ -144,12 +129,10 @@ export default function LocationSearchInput({
         }
       }
       
-      // Remove keyboard event listener
       if (inputRef.current) {
         inputRef.current.removeEventListener('keydown', handleKeyDown);
       }
       
-      // Disconnect observer
       if (observerRef.current) {
         observerRef.current.disconnect();
       }

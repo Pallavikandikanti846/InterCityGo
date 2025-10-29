@@ -1,4 +1,3 @@
-// server/src/routes/auth.js
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -13,13 +12,11 @@ const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
 const router = express.Router();
 
-// Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, "../public/uploads/cars");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadsDir);
@@ -32,7 +29,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
       cb(null, true);
@@ -42,7 +39,6 @@ const upload = multer({
   },
 });
 
-// POST /api/auth/signup
 router.post("/signup", upload.single("carImage"), async (req, res) => {
   try {
     const { name, email, password, phone, role, carModel } = req.body;
@@ -56,10 +52,21 @@ router.post("/signup", upload.single("carImage"), async (req, res) => {
       carImage: req.file ? "uploaded" : "not uploaded"
     });
 
-    // Validate driver required fields
+    if (!name || !email || !password) {
+      if (req.file) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (deleteError) {
+          console.error("Error deleting file:", deleteError);
+        }
+      }
+      return res.status(400).json({ 
+        message: "Missing required fields: name, email, and password are required" 
+      });
+    }
+
     if (role === "driver") {
       if (!name || !email || !password || !phone || !carModel || !req.file) {
-        // Delete uploaded file if validation fails
         if (req.file) {
           try {
             fs.unlinkSync(req.file.path);
@@ -73,11 +80,9 @@ router.post("/signup", upload.single("carImage"), async (req, res) => {
       }
     }
 
-    // Check if user exists in either collection
     const existingUser = await User.findOne({ email });
     const existingDriver = await Driver.findOne({ email });
     if (existingUser || existingDriver) {
-      // Delete uploaded file if user exists
       if (req.file) {
         try {
           fs.unlinkSync(req.file.path);
@@ -88,10 +93,8 @@ router.post("/signup", upload.single("carImage"), async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save to appropriate collection based on role
     if (role === "driver") {
       console.log("Creating driver in Drivers collection...");
       try {
@@ -115,7 +118,6 @@ router.post("/signup", upload.single("carImage"), async (req, res) => {
         });
       } catch (driverError) {
         console.error("Error creating driver:", driverError);
-        // Delete uploaded file if creation fails
         if (req.file) {
           try {
             fs.unlinkSync(req.file.path);
@@ -159,7 +161,6 @@ router.post("/signup", upload.single("carImage"), async (req, res) => {
     }
   } catch (error) {
     console.error("Signup error:", error);
-    // Delete uploaded file if error occurs
     if (req.file) {
       try {
         fs.unlinkSync(req.file.path);
@@ -171,12 +172,10 @@ router.post("/signup", upload.single("carImage"), async (req, res) => {
   }
 });
 
-// POST /api/auth/login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    // Check in both User and Driver collections
     let user = await User.findOne({ email });
     let isDriver = false;
     
@@ -213,7 +212,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Middleware to verify token
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "Access denied" });
@@ -227,10 +225,8 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// GET /api/auth/profile
 router.get("/profile", verifyToken, async (req, res) => {
   try {
-    // Check in both User and Driver collections
     let user = await User.findById(req.userId).select("-password");
     
     if (!user) {
@@ -254,12 +250,10 @@ router.get("/profile", verifyToken, async (req, res) => {
   }
 });
 
-// PUT /api/auth/profile
 router.put("/profile", verifyToken, async (req, res) => {
   try {
     const { name, phone } = req.body;
 
-    // Check in both User and Driver collections
     let user = await User.findByIdAndUpdate(
       req.userId,
       { name, phone },
@@ -285,10 +279,8 @@ router.put("/profile", verifyToken, async (req, res) => {
   }
 });
 
-// DELETE /api/auth/account - Delete user account
 router.delete("/account", verifyToken, async (req, res) => {
   try {
-    // Check in both User and Driver collections
     let user = await User.findById(req.userId);
     let isDriver = false;
     
@@ -299,7 +291,6 @@ router.delete("/account", verifyToken, async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Delete the user/driver from database
     if (isDriver) {
       await Driver.findByIdAndDelete(req.userId);
     } else {

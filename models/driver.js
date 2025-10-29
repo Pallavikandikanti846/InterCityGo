@@ -1,4 +1,3 @@
-// models/driver.js
 import mongoose from "mongoose";
 
 const driverSchema = new mongoose.Schema(
@@ -8,9 +7,8 @@ const driverSchema = new mongoose.Schema(
     password: { type: String, required: true },
     phone: { type: String, required: true },
     role: { type: String, default: "driver", enum: ["driver"] },
-    // Driver-specific fields
     carModel: { type: String, required: true },
-    carImage: { type: String, required: true }, // URL or path to image
+    carImage: { type: String, required: true },
     vehicleInfo: {
       make: { type: String, default: "" },
       model: { type: String, default: "" },
@@ -24,7 +22,6 @@ const driverSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Prevent Mongoose from overwriting model if it already exists
 const Driver = mongoose.models.Driver || mongoose.model("Driver", driverSchema);
 
 export default Driver;

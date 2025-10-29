@@ -97,7 +97,6 @@ export default function AdminLogin() {
 
         {error && <div className="error-message">{error}</div>}
         
-        {/* Development Mode Button */}
         {import.meta.env.DEV && (
           <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: "1px solid var(--border-color)" }}>
             <button
@@ -115,7 +114,7 @@ export default function AdminLogin() {
                 cursor: "pointer"
               }}
             >
-              🔧 Development Mode Login
+              Development Mode Login
             </button>
             <p style={{
               marginTop: "8px",

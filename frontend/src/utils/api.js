@@ -1,4 +1,3 @@
-// API utility functions
 const API_BASE_URL = "http://localhost:8888/api";
 
 const getAuthHeader = () => {
@@ -7,7 +6,6 @@ const getAuthHeader = () => {
 };
 
 export const api = {
-  // Auth
   login: async (credentials) => {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
@@ -29,7 +27,6 @@ export const api = {
     return res.json();
   },
 
-  // Trips
   searchTrips: async (searchParams) => {
     const res = await fetch(`${API_BASE_URL}/trips/search`, {
       method: "POST",
@@ -79,7 +76,6 @@ export const api = {
     return res.json();
   },
 
-  // Bookings
   getMyTrips: async () => {
     const res = await fetch(`${API_BASE_URL}/bookings/my-trips`, {
       headers: getAuthHeader(),
@@ -102,7 +98,6 @@ export const api = {
     return res.json();
   },
 
-  // User Profile
   getProfile: async () => {
     const res = await fetch(`${API_BASE_URL}/auth/profile`, {
       headers: getAuthHeader(),
@@ -130,7 +125,6 @@ export const api = {
     return res.json();
   },
 
-  // Driver Earnings
   getDriverEarnings: async () => {
     const res = await fetch(`${API_BASE_URL}/driver/earnings`, {
       headers: getAuthHeader(),
@@ -138,7 +132,6 @@ export const api = {
     return res.json();
   },
 
-  // Driver Pending Requests
   getDriverPendingRequests: async () => {
     const res = await fetch(`${API_BASE_URL}/driver/pending-requests`, {
       headers: getAuthHeader(),
@@ -146,7 +139,6 @@ export const api = {
     return res.json();
   },
 
-  // Driver Booking Details
   getDriverBooking: async (bookingId) => {
     const res = await fetch(`${API_BASE_URL}/driver/booking/${bookingId}`, {
       headers: getAuthHeader(),
@@ -154,7 +146,6 @@ export const api = {
     return res.json();
   },
 
-  // Accept Driver Booking
   acceptDriverBooking: async (bookingId) => {
     const res = await fetch(`${API_BASE_URL}/driver/booking/${bookingId}/accept`, {
       method: "POST",
@@ -163,7 +154,6 @@ export const api = {
     return res.json();
   },
 
-  // Decline Driver Booking
   declineDriverBooking: async (bookingId) => {
     const res = await fetch(`${API_BASE_URL}/driver/booking/${bookingId}/decline`, {
       method: "POST",
@@ -172,7 +162,6 @@ export const api = {
     return res.json();
   },
 
-  // Admin APIs
   adminLogin: async (credentials) => {
     const res = await fetch(`${API_BASE_URL}/admin/login`, {
       method: "POST",

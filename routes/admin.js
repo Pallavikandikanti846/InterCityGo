@@ -1,4 +1,3 @@
-// routes/admin.js
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -8,7 +7,6 @@ import Driver from "../models/driver.js";
 
 const router = express.Router();
 
-// Middleware to verify admin token
 const verifyAdminToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "Access denied" });
@@ -26,7 +24,6 @@ const verifyAdminToken = (req, res, next) => {
   }
 };
 
-// GET /api/admin/test - Test endpoint to check admin collection
 router.get("/test", async (req, res) => {
   try {
     console.log("=== ADMIN TEST ENDPOINT ===");
@@ -49,7 +46,6 @@ router.get("/test", async (req, res) => {
       message: "Admin collection test",
       count: allAdmins.length,
       documents: allAdmins.map(doc => {
-        // Handle nested structure where fields might be inside _id
         const data = (doc._id && typeof doc._id === 'object' && doc._id.email) ? doc._id : doc;
         return {
           _id: doc._id,
@@ -70,9 +66,8 @@ router.get("/test", async (req, res) => {
   }
 });
 
-// POST /api/admin/login
 router.post("/login", async (req, res) => {
-  console.log("\n🔥🔥🔥 ADMIN LOGIN ROUTE HIT! 🔥🔥🔥");
+  console.log("ADMIN LOGIN ROUTE HIT");
   console.log("Request body:", JSON.stringify(req.body, null, 2));
   
   try {
@@ -90,58 +85,50 @@ router.post("/login", async (req, res) => {
     let user = null;
     let userCollection = null;
     
-    // First, check in User collection (users collection) for admin role
     console.log("Checking users collection...");
     try {
       user = await User.findOne({ email, role: "admin" });
       if (user) {
         userCollection = User;
-        console.log("✅ Admin user found in users collection");
+        console.log("Admin user found in users collection");
         console.log("User details:", { name: user.name, email: user.email, role: user.role, hasPassword: !!user.password });
       } else {
-        // Also check by email only
         const userByEmail = await User.findOne({ email });
         if (userByEmail) {
-          console.log("⚠️ User found but role is:", userByEmail.role);
+          console.log("User found but role is:", userByEmail.role);
         } else {
-          console.log("❌ No user found in users collection with email:", email);
+          console.log("No user found in users collection with email:", email);
         }
       }
     } catch (userError) {
       console.error("Error checking users collection:", userError);
     }
     
-    // If not found, check in the 'admin' collection directly
     if (!user) {
       console.log("Checking admin collection...");
       try {
         if (mongoose.connection.readyState !== 1) {
-          console.error("❌ MongoDB not connected! ReadyState:", mongoose.connection.readyState);
+          console.error("MongoDB not connected. ReadyState:", mongoose.connection.readyState);
           return res.status(500).json({ message: "Database connection error" });
         }
         
         const AdminCollection = mongoose.connection.db.collection("admin");
         console.log("Admin collection accessed");
         
-        // First try normal query
         let adminDoc = await AdminCollection.findOne({ email: email });
         
-        // If not found, try searching inside _id (for nested structure)
         if (!adminDoc) {
           console.log("Normal query failed, trying nested _id.email query...");
           adminDoc = await AdminCollection.findOne({ "_id.email": email });
         }
         
-        // If still not found, get all docs and filter manually (for weird nested structures)
         if (!adminDoc) {
           console.log("Nested query failed, fetching all and filtering manually...");
           const allDocs = await AdminCollection.find({}).toArray();
           adminDoc = allDocs.find(doc => {
-            // Check normal structure
             if (doc.email === email || doc.email?.toLowerCase() === email.toLowerCase()) {
               return true;
             }
-            // Check nested in _id
             if (doc._id && typeof doc._id === 'object' && doc._id.email) {
               return doc._id.email === email || doc._id.email?.toLowerCase() === email.toLowerCase();
             }
@@ -156,10 +143,9 @@ router.post("/login", async (req, res) => {
           console.log("Admin document FULL:", JSON.stringify(adminDoc, null, 2));
           console.log("Admin document keys:", Object.keys(adminDoc));
           
-          // Handle nested structure - check if fields are inside _id
           let adminData = adminDoc;
           if (adminDoc._id && typeof adminDoc._id === 'object' && adminDoc._id.email) {
-            console.log("⚠️ WARNING: Fields are nested inside _id! Fixing structure...");
+            console.log("WARNING: Fields are nested inside _id! Fixing structure...");
             adminData = { ...adminDoc._id, _id: adminDoc._id.id || adminDoc._id._id || adminDoc._id };
           }
           
@@ -173,16 +159,14 @@ router.post("/login", async (req, res) => {
           });
           
           if (adminData && (adminData.role === "admin" || !adminData.role)) {
-            // Check if password exists - if not, this is a data issue
             if (!adminData.password) {
-              console.error("❌ ERROR: Admin document found but password field is missing!");
+              console.error("ERROR: Admin document found but password field is missing");
               console.error("Available fields:", Object.keys(adminData));
               return res.status(500).json({ 
                 message: "Admin account configuration error: password field missing in database" 
               });
             }
             
-            // Convert to user-like object
             user = {
               _id: adminData._id || adminData.id || adminDoc._id,
               id: adminData.id || (adminData._id ? adminData._id.toString() : adminDoc._id.toString()),
@@ -193,74 +177,67 @@ router.post("/login", async (req, res) => {
               role: adminData.role || "admin"
             };
             userCollection = AdminCollection;
-            console.log("✅ Admin user found in admin collection");
+            console.log("Admin user found in admin collection");
           } else if (adminData) {
-            console.log("⚠️ User found but role is:", adminData.role);
+            console.log("User found but role is:", adminData.role);
           }
         }
       } catch (collectionError) {
-        console.error("❌ Error accessing admin collection:", collectionError);
+        console.error("Error accessing admin collection:", collectionError);
         console.error("Error details:", collectionError.message, collectionError.stack);
       }
     }
     
     if (!user) {
-      console.log("❌ Admin user not found in any collection");
+      console.log("Admin user not found in any collection");
       return res.status(401).json({ message: "Invalid credentials or not an admin" });
     }
 
-    console.log("🔐 Verifying password...");
+    console.log("Verifying password...");
     console.log("Stored password:", user.password ? (user.password.substring(0, 10) + "...") : "none");
     console.log("Stored password length:", user.password ? user.password.length : 0);
     
-    // Check if password is hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
     const isHashed = user.password && (user.password.startsWith("$2a$") || user.password.startsWith("$2b$") || user.password.startsWith("$2y$"));
     console.log("Password is hashed:", isHashed);
     
     let isMatch = false;
     if (isHashed) {
-      // Password is hashed, use bcrypt.compare
       isMatch = await bcrypt.compare(password, user.password);
       console.log("Bcrypt compare result:", isMatch);
     } else {
-      // Password is plain text - compare directly
-      console.log("⚠️ WARNING: Plain text password detected!");
+      console.log("WARNING: Plain text password detected!");
       console.log("Comparing:", password, "===", user.password);
       console.log("Exact match:", password === user.password);
       console.log("Length match:", password.length === (user.password ? user.password.length : 0));
       
-      // Trim and compare (in case of whitespace issues)
       const trimmedPassword = password.trim();
       const trimmedStored = (user.password || "").trim();
       isMatch = trimmedPassword === trimmedStored;
       
       console.log("Trimmed comparison result:", isMatch);
       
-      // Auto-hash the password for future logins
       if (isMatch && userCollection) {
         try {
           console.log("Hashing password for future use...");
           const hashedPassword = await bcrypt.hash(password, 10);
           if (userCollection === User) {
-            // Update in User model
             await User.findByIdAndUpdate(user._id, { password: hashedPassword });
-            console.log("✅ Password hashed and updated in User model");
+            console.log("Password hashed and updated in User model");
           } else {
-            // Update in admin collection directly
             const updateResult = await mongoose.connection.db.collection("admin").updateOne(
               { _id: user._id },
               { $set: { password: hashedPassword } }
             );
-            console.log("✅ Password hashed and updated in admin collection. Modified:", updateResult.modifiedCount);
+            console.log("Password hashed and updated in admin collection. Modified:", updateResult.modifiedCount);
           }
         } catch (hashError) {
-          console.error("❌ Error hashing password:", hashError);
+          console.error("Error hashing password:", hashError);
         }
       }
     }
     
     if (!isMatch) {
-      console.log("❌ Password mismatch");
+      console.log("Password mismatch");
       console.log("=== LOGIN FAILED ===");
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -271,7 +248,7 @@ router.post("/login", async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    console.log("✅ Admin login successful:", user.email);
+    console.log("Admin login successful:", user.email);
     console.log("=== LOGIN SUCCESS ===");
     res.json({
       message: "Admin login successful",
@@ -286,13 +263,12 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("❌ Admin login error:", error);
+    console.error("Admin login error:", error);
     console.error("Error stack:", error.stack);
     res.status(500).json({ message: "Admin login failed", error: error.message });
   }
 });
 
-// GET /api/admin/users - Get all users
 router.get("/users", verifyAdminToken, async (req, res) => {
   try {
     const users = await User.find({ role: { $ne: "admin" } })
@@ -317,7 +293,6 @@ router.get("/users", verifyAdminToken, async (req, res) => {
   }
 });
 
-// GET /api/admin/drivers - Get all drivers
 router.get("/drivers", verifyAdminToken, async (req, res) => {
   try {
     const drivers = await Driver.find({})
@@ -345,10 +320,8 @@ router.get("/drivers", verifyAdminToken, async (req, res) => {
   }
 });
 
-// GET /api/admin/disputes - Get all disputes
 router.get("/disputes", verifyAdminToken, async (req, res) => {
   try {
-    // For now, return empty array - disputes system will be implemented later
     res.json({
       success: true,
       disputes: []

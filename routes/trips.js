@@ -1,4 +1,3 @@
-// routes/trips.js
 import express from "express";
 import Trip from "../models/trip.js";
 import Booking from "../models/booking.js";
@@ -6,7 +5,6 @@ import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// POST /api/trips/search - Search for available trips
 router.post("/search", authenticateToken, async (req, res) => {
   try {
     const { pickupCity, dropoffCity, date, rideType } = req.body;
@@ -40,17 +38,14 @@ router.post("/search", authenticateToken, async (req, res) => {
   }
 });
 
-// POST /api/trips - Create a new trip (for drivers)
 router.post("/", authenticateToken, async (req, res) => {
   try {
     const { pickupLocation, dropoffLocation, date, time, rideType, availableSeats } = req.body;
 
-    // Calculate fare (simplified - you can add complex logic later)
     const baseFare = 110.0;
     const taxesAndFees = 10.0;
     const totalFare = baseFare + taxesAndFees;
 
-    // Check if user is a driver from Driver collection
     const Driver = (await import("../models/driver.js")).default;
     const driver = await Driver.findById(req.user.id);
     
@@ -74,7 +69,6 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/trips/:id - Get trip details
 router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id)
@@ -91,7 +85,6 @@ router.get("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// POST /api/trips/:id/book - Book a trip
 router.post("/:id/book", authenticateToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id);
@@ -104,7 +97,6 @@ router.post("/:id/book", authenticateToken, async (req, res) => {
       return res.status(400).json({ message: "No seats available" });
     }
 
-    // Check if user already booked this trip
     const existingBooking = await Booking.findOne({
       user: req.user.id,
       trip: trip._id,
@@ -115,22 +107,19 @@ router.post("/:id/book", authenticateToken, async (req, res) => {
       return res.status(400).json({ message: "You have already booked this trip" });
     }
 
-    // Calculate fare based on ride type
     let fareAmount = trip.totalFare;
     if (trip.rideType === "pooling") {
-      fareAmount = Math.round(trip.totalFare / 2); // 50% discount for pooling
+      fareAmount = Math.round(trip.totalFare / 2);
     }
 
-    // Create booking
     const booking = await Booking.create({
       user: req.user.id,
       trip: trip._id,
       fareAmount,
       status: "confirmed",
-      paymentStatus: "paid", // Assuming payment is handled separately
+      paymentStatus: "paid",
     });
 
-    // Update trip
     trip.availableSeats -= 1;
     trip.passengers.push(req.user.id);
     await trip.save();
@@ -141,7 +130,6 @@ router.post("/:id/book", authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/trips/:id/pool - Get pooling details (co-passengers)
 router.get("/:id/pool", authenticateToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id).populate("passengers", "name");

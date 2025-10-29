@@ -80,22 +80,35 @@ export default function Login() {
           }
         }
         
-        // Create FormData for file upload
-        const formDataToSend = new FormData();
-        formDataToSend.append("name", formData.name);
-        formDataToSend.append("email", formData.email);
-        formDataToSend.append("password", formData.password);
-        formDataToSend.append("phone", formData.phone);
-        formDataToSend.append("role", userType);
-        
+        // Build payload based on user type
+        let payload;
+        let isMultipart = false;
         if (userType === "driver") {
-          formDataToSend.append("carModel", formData.carModel);
+          // For drivers, use FormData to include image upload
+          const fd = new FormData();
+          fd.append("name", formData.name);
+          fd.append("email", formData.email);
+          fd.append("password", formData.password);
+          fd.append("phone", formData.phone);
+          fd.append("role", userType);
+          fd.append("carModel", formData.carModel);
           if (formData.carImage) {
-            formDataToSend.append("carImage", formData.carImage);
+            fd.append("carImage", formData.carImage);
           }
+          payload = fd;
+          isMultipart = true;
+        } else {
+          // For passengers, send JSON
+          payload = {
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            phone: formData.phone,
+            role: userType,
+          };
         }
-        
-        const data = await api.signup(formDataToSend, userType === "driver");
+
+        const data = await api.signup(payload, isMultipart);
         
         if (data.success || data.message) {
           // Show success message
